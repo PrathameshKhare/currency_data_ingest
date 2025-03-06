@@ -1,5 +1,49 @@
 # Currency Data Ingestion Process
 
+## Setup and Installation
+
+### Prerequisites
+- AWS CLI configured with appropriate credentials
+- Terraform installed (version >= 1.0)
+- Python 3.12
+- Access to AWS services (Lambda, S3, Secrets Manager, EventBridge)
+
+### Initial Setup
+1. Clone the repository:
+```bash
+git clone <https://github.com/PrathameshKhare/currency_data_ingest.git>
+cd currency_data_ingest
+```
+
+2. Create API key in Secrets Manager:
+```bash
+aws secretsmanager create-secret \
+    --name fixer_api_credentials \
+    --secret-string '{"api_key":"your-fixer-api-key"}'
+```
+
+3. Deploy infrastructure:
+```bash
+cd terraform
+terraform init
+terraform plan
+terraform apply
+```
+
+## Architecture Overview
+
+```
+EventBridge (Trigger) → Lambda → Fixer API
+                                    ↓
+Secrets Manager → Lambda → S3 Bucket
+```
+
+### Components
+- **EventBridge**: Scheduled trigger (hourly)
+- **Lambda**: Python 3.12 runtime, 128MB memory, 60s timeout
+- **Secrets Manager**: Stores Fixer API credentials
+- **S3**: Stores currency data in JSON format
+
 ## 1. API Selection:
 We selected the **Fixer.io API** to fetch currency exchange rate data. Currently, we are using the **free version** of the API, which unfortunately comes with some limitations. One of the key restrictions is that the free plan allows us to only use **EURO (EUR)** as the base currency for comparison with others. Despite this limitation, we can still track the relative exchange rates for other currencies, with EURO serving as the standard.
 
@@ -15,9 +59,21 @@ The Lambda function is written in **Python**, leveraging the `requests` module t
 - **Store Data in S3**: The fetched data is stored in an S3 bucket with a key that includes the current **date** (partitioned daily).
 - **File Naming**: The S3 key is created using the current date in **YYYY-MM-DD** format, ensuring that files are stored in specific folders for each day. Files are named using the timestamp of the request (e.g., `currency_data/YYYY-MM-DD/HH-MM-SS_currencies.json`) to avoid overwriting previous data and keep each hourly file distinct.
 
-We assume the following values for the Lambda function:
-- **Secret Name**: `fixer_api_credentials` (where the API key is stored).
-- **S3 Bucket Name**: `your-s3-bucket-name` (to be replaced with the actual bucket name).
+### Lambda Configuration
+Environment variables:
+- `SECRET_NAME`: Points to AWS Secrets Manager secret (fixer_api_credentials)
+- `S3_BUCKET_NAME`: Auto-populated from Terraform S3 bucket resource
+
+### S3 Storage Structure
+```plaintext
+bucket-name/
+├── currency_data/
+│   ├── 2025-03-06/
+│   │   ├── 10-00-00_currencies.json
+│   │   ├── 11-00-00_currencies.json
+│   │   └── ...
+│   └── ...
+```
 
 ## 3. Infrastructure as Code (IaC) Using Terraform:
 We’ve used **Terraform** to define and provision the required AWS resources. The following files are part of the IaC setup:
