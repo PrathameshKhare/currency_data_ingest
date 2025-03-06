@@ -1,4 +1,4 @@
-# currency_data_ingest# Currency Data Ingestion Process
+# Currency Data Ingestion Process
 
 ## 1. API Selection:
 We selected the **Fixer.io API** to fetch currency exchange rate data. Currently, we are using the **free version** of the API, which unfortunately comes with some limitations. One of the key restrictions is that the free plan allows us to only use **EURO (EUR)** as the base currency for comparison with others. Despite this limitation, we can still track the relative exchange rates for other currencies, with EURO serving as the standard.
