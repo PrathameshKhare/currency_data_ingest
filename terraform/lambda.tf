@@ -9,8 +9,8 @@ resource "aws_lambda_function" "currency_data_lambda" {
 
   environment {
     variables = {
-      SECRET_NAME   = "FIXER_CURRENCY_API_KEY"
-      S3_BUCKET_NAME = aws_s3_bucket.currency_data_bucket.bucket
+      SECRET_NAME    = data.aws_secretsmanager_secret.existing_fixer_api.name
+      S3_BUCKET_NAME = aws_s3_bucket.currency_data_bucket.id
     }
   }
 }
