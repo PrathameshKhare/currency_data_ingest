@@ -1,35 +1,5 @@
 # Currency Data Ingestion Process
 
-## Setup and Installation
-
-### Prerequisites
-- AWS CLI configured with appropriate credentials
-- Terraform installed (version >= 1.0)
-- Python 3.12
-- Access to AWS services (Lambda, S3, Secrets Manager, EventBridge)
-
-### Initial Setup
-1. Clone the repository:
-```bash
-git clone <https://github.com/PrathameshKhare/currency_data_ingest.git>
-cd currency_data_ingest
-```
-
-2. Create API key in Secrets Manager:
-```bash
-aws secretsmanager create-secret \
-    --name fixer_api_credentials \
-    --secret-string '{"api_key":"your-fixer-api-key"}'
-```
-
-3. Deploy infrastructure:
-```bash
-cd terraform
-terraform init
-terraform plan
-terraform apply
-```
-
 ## Architecture Overview
 
 ```
