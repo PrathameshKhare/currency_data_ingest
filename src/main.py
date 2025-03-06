@@ -12,25 +12,28 @@ secrets_manager_client = boto3.client('secretsmanager')
 
 # Function to fetch API credentials from AWS Secrets Manager
 def get_api_credentials():
-    secret_name = os.environ['SECRET_NAME']  # Name of the secret stored in Secrets Manager
+    secret_name = os.environ.get('SECRET_NAME')
+    if not secret_name:
+        raise ValueError("SECRET_NAME environment variable is not set")
     try:
         secret_value = secrets_manager_client.get_secret_value(SecretId=secret_name)
-        secret = secret_value['SecretString']
-        return json.loads(secret)
+        secret = json.loads(secret_value['SecretString'])
+        if 'api_key' not in secret:
+            raise ValueError("API key not found in secret")
+        return secret
     except ClientError as e:
         print(f"Error retrieving secret: {e}")
-        raise e
+        raise
 
 # Function to fetch data from the Fixer API
 def fetch_currency_data(api_url, api_key):
-    url = api_url.format(PASTE_YOUR_API_KEY_HERE=api_key)
-    
-    response = requests.get(url)
-    
-    if response.status_code == 200:
+    try:
+        response = requests.get(api_url, timeout=10)  # Add timeout
+        response.raise_for_status()  # Raise exception for non-200 status codes
         return response.json()
-    else:
-        raise Exception(f"Failed to fetch data. Status code: {response.status_code}")
+    except requests.RequestException as e:
+        print(f"API request failed: {e}")
+        raise
 
 # Function to process and store data in S3
 def store_in_s3(data, bucket_name, s3_key):
