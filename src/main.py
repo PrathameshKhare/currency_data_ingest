@@ -60,6 +60,9 @@ def save_as_json(data, file_name):
 
 # Lambda handler
 def lambda_handler(event, context):
+    # Generate current time in the desired format for file names
+    event_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    
     # Fetch the credentials from Secrets Manager
     secrets = get_api_credentials()
     api_key = secrets['api_key']
@@ -70,15 +73,18 @@ def lambda_handler(event, context):
     data = fetch_currency_data(api_url, api_key)
     print(data)
     
+    # Get the current date in YYYY-MM-DD format to create a folder for the day
+    current_date = datetime.now().strftime('%Y-%m-%d')
+
     # Define the S3 bucket and key for storing the data
     bucket_name = os.environ['S3_BUCKET_NAME']
-    s3_key = f"currency_data/{event['time']}_currencies.json"
+    s3_key = f"currency_data/{current_date}/{event_time}_currencies.json"
     
     # Store the data in S3
     store_in_s3(data, bucket_name, s3_key)
     
     # Save the data as a local JSON file (for testing purposes)
-    local_file_name = f"currency_data_{event['time']}.json"
+    local_file_name = f"currency_data_{event_time}.json"
     save_as_json(data, local_file_name)
     
     return {
@@ -89,12 +95,10 @@ def lambda_handler(event, context):
 # Main function for running the script locally
 if __name__ == "__main__":
     # Mock event and context for local execution
-    event = {'time': datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}  # Format time for safe file names
+    event = {} 
     context = {}
     
-    # Set environment variables locally (simulate what Lambda would have)
-    os.environ['SECRET_NAME'] = "fixer_api_credentials"  # Replace with your secret name
-    os.environ['S3_BUCKET_NAME'] = "your-s3-bucket-name"  # Replace with your actual S3 bucket name
+    os.environ['SECRET_NAME'] = "fixer_api_credentials"  
+    os.environ['S3_BUCKET_NAME'] = "your-s3-bucket-name" 
     
-    # Run the Lambda handler locally
     lambda_handler(event, context)
