@@ -1,3 +1,4 @@
 provider "aws" {
-  region = "us-east-1"
+  region     = "ap-southeast-2"
+  profile    = "default"    # Profile from ~/.aws/credentials file
 }
