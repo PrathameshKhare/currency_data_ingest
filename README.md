@@ -1,1 +1,1 @@
-# marketstack_stock_ingest
+# currency_data_ingest
