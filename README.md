@@ -33,10 +33,17 @@ terraform apply
 ## Architecture Overview
 
 ```
-EventBridge (Trigger) → Lambda → Fixer API
-                                    ↓
-Secrets Manager → Lambda → S3 Bucket
+                     ┌─── Secrets Manager
+                     ↓
+EventBridge → Lambda → Fixer API
+                     ↓
+                    S3
 ```
+### Flow Explanation:
+1. EventBridge triggers the Lambda function hourly
+2. Lambda retrieves API key from Secrets Manager
+3. Lambda calls Fixer API with the retrieved credentials
+4. Lambda stores the response data in S3
 
 ### Components
 - **EventBridge**: Scheduled trigger (hourly)
