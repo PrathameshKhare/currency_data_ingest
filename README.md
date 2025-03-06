@@ -24,7 +24,7 @@ We’ve used **Terraform** to define and provision the required AWS resources. T
 
 - **`provider.tf`**: Configures the AWS provider for Terraform. It sets up the credentials and region for resource management.
 - **`s3.tf`**: Defines the S3 bucket where the currency data will be stored. The bucket is configured to store partitioned data based on the current **date** (e.g., `year=YYYY/month=MM/day=DD`).
-- **`lambda.tf`**: Configures the Lambda function resource. It specifies the function’s code location, the runtime (Python 3.x), and the necessary environment variables (e.g., the Secret Name and S3 Bucket Name). The Lambda function is triggered by EventBridge.
+- **`lambda.tf`**: Configures the Lambda function resource. It specifies the function’s code location, the runtime (Python 3.12 in our case), and the necessary environment variables (e.g., the Secret Name and S3 Bucket Name). The Lambda function is triggered by EventBridge.
 - **`eventbridge.tf`**: Sets up the EventBridge rule to trigger the Lambda function every hour. The rule defines the schedule for when the Lambda function is invoked, ensuring that currency data is ingested once every hour.
 - **`iam.tf`**: Defines the IAM roles and policies needed for the Lambda function to interact with S3, Secrets Manager, and other AWS resources securely.
 - **`outputs.tf`**: Outputs the key information about the deployed resources, such as the S3 bucket name and Lambda function ARN, for easy reference.
