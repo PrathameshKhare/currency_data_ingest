@@ -25,7 +25,7 @@ EventBridge → Lambda → Fixer API
 5. S3 event triggers ETL Lambda function
 6. ETL Lambda transforms data to Parquet format
 7. Transformed data is stored in partitioned S3 location
-8. Data is queryable via Athena using Glue catalog
+8. This data can be queried via Athena using Glue catalog (This is something that can be added, unfortunately due to time constraints I was only able to add the IAC through terraform)
 
 ### Components
 - **EventBridge**: Scheduled trigger (hourly)
@@ -36,7 +36,7 @@ EventBridge → Lambda → Fixer API
   - Raw data: JSON format (`currency_data/`)
   - Processed data: Parquet format (`processed_data/`)
 - **Glue Catalog**: Manages table schema for Athena
-- **Athena**: SQL query interface for analysis
+- **Athena**: SQL query interface for analysis (Terraform code added)
 
   
 ## 1. API Selection:
