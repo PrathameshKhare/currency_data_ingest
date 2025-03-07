@@ -2,25 +2,43 @@
 
 ## Architecture Overview
 
+
 ```
                      ┌─── Secrets Manager
                      ↓
 EventBridge → Lambda → Fixer API
                      ↓
-                    S3
+                    S3 (Raw JSON)
+                     ↓
+            S3 Event → ETL Lambda
+                     ↓
+                    S3 (Parquet)
+                     ↓
+            Glue Catalog → Athena
 ```
+
 ### Flow Explanation:
-1. EventBridge triggers the Lambda function hourly
+1. EventBridge triggers the first Lambda function hourly
 2. Lambda retrieves API key from Secrets Manager
 3. Lambda calls Fixer API with the retrieved credentials
-4. Lambda stores the response data in S3
+4. Lambda stores the raw JSON data in S3
+5. S3 event triggers ETL Lambda function
+6. ETL Lambda transforms data to Parquet format
+7. Transformed data is stored in partitioned S3 location
+8. Data is queryable via Athena using Glue catalog
 
 ### Components
 - **EventBridge**: Scheduled trigger (hourly)
-- **Lambda**: Python 3.12 runtime, 128MB memory, 60s timeout
+- **Primary Lambda**: Python 3.12 runtime, 128MB memory, 60s timeout
+- **ETL Lambda**: Python 3.12 runtime, 512MB memory, 300s timeout
 - **Secrets Manager**: Stores Fixer API credentials
-- **S3**: Stores currency data in JSON format
+- **S3**: 
+  - Raw data: JSON format (`currency_data/`)
+  - Processed data: Parquet format (`processed_data/`)
+- **Glue Catalog**: Manages table schema for Athena
+- **Athena**: SQL query interface for analysis
 
+  
 ## 1. API Selection:
 We selected the **Fixer.io API** to fetch currency exchange rate data. Currently, we are using the **free version** of the API, which unfortunately comes with some limitations. One of the key restrictions is that the free plan allows us to only use **EURO (EUR)** as the base currency for comparison with others. Despite this limitation, we can still track the relative exchange rates for other currencies, with EURO serving as the standard.
 
