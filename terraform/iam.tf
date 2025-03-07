@@ -88,3 +88,27 @@ resource "aws_iam_role_policy" "etl_s3_policy" {
     ]
   })
 }
+
+resource "aws_iam_role_policy" "etl_glue_policy" {
+  name = "etl_glue_policy"
+  role = aws_iam_role.etl_lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "glue:GetTable",
+          "glue:GetPartitions",
+          "glue:CreatePartition",
+          "glue:BatchCreatePartition"
+        ]
+        Resource = [
+          aws_glue_catalog_database.currency_db.arn,
+          "${aws_glue_catalog_database.currency_db.arn}/table/${aws_glue_catalog_table.currency_rates.name}"
+        ]
+      }
+    ]
+  })
+}
