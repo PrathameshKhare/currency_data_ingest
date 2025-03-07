@@ -80,11 +80,79 @@ The Lambda function performs the following tasks:
 
 The entire infrastructure (Lambda, EventBridge, IAM roles, and S3 bucket) is managed using Terraform, ensuring that the resources are provisioned, updated, and maintained as code.
 
+## 5. ETL Process and Analytics Setup
+
+### ETL Pipeline
+The ETL process transforms raw JSON currency data into analytics-ready Parquet format:
+
+1. **Extract**: 
+   - Triggered automatically when new data lands in S3
+   - S3 event notification triggers ETL Lambda function
+   - Raw JSON is read from `currency_data/{date}/` directory
+
+2. **Transform**:
+   - Flattens nested JSON structure
+   - Converts to tabular format with columns:
+     - date
+     - timestamp
+     - base_currency
+     - target_currency
+     - exchange_rate
+     - hour
+   - Adds partition columns (year, month, day)
+
+3. **Structure of data**:
+Each Parquet file would contain rows like this:
+```
+date       | timestamp           | base_currency | target_currency | exchange_rate | hour
+-----------|--------------------|---------------|----------------|---------------|-----
+2025-03-06 | 2025-03-06T00:00Z | EUR          | USD            | 1.08032      | 0
+2025-03-06 | 2025-03-06T00:00Z | EUR          | GBP            | 0.85674      | 0
+2025-03-06 | 2025-03-06T00:00Z | EUR          | JPY            | 161.234      | 0
+```
+
+4. **Load**:
+   - Writes data as Parquet files
+   - Partitioned structure:
+   ```plaintext
+        processed_data/
+        ├── year=2025/
+        │   ├── month=03/
+        │   │   ├── day=06/
+        │   │   │   ├── currency_rates_00.parquet  # Data from 00:00
+        │   │   │   ├── currency_rates_01.parquet  # Data from 01:00
+        │   │   │   ├── currency_rates_02.parquet  # Data from 02:00
+        │   │   │   └── ...
+        │   │   └── day=07/
+        │   │       ├── currency_rates_00.parquet
+        │   │       └── ...
+        │   └── month=04/
+        │       └── ...
+   ```
+### Infrastructure Components
+- **ETL Lambda**: Processes raw data (`etl_processor.py`)
+- **Glue Data Catalog**: Manages table schema
+- **Athena**: Executes SQL queries
+- **S3**: Stores both raw and processed data
+
 ## Summary:
-- **API**: Fixer.io API (free version, limited to EURO base currency).
-- **Lambda**: Fetches data every hour, processes it, and stores it in S3.
-- **EventBridge**: Triggers the Lambda function on an hourly cadence.
-- **IaC**: Terraform used for provisioning all AWS resources (S3, Lambda, EventBridge, IAM).
-- **Storage**: Data is stored in partitioned folders on S3, with folders organized by the **current date** (e.g., `currency_data/YYYY-MM-DD/HH-MM-SS_currencies.json`).
+- **Data Collection**:
+  - Source: Fixer.io API (free version, limited to EURO base currency)
+  - Frequency: Hourly data collection via EventBridge trigger
+  - Initial Storage: Raw JSON in S3 (`currency_data/YYYY-MM-DD/HH-MM-SS_currencies.json`)
+
+- **ETL Process**:
+  - Trigger: S3 event-based processing
+  - Transformation: JSON to Parquet conversion
+  - Storage: Partitioned data structure (`processed_data/year=YYYY/month=MM/day=DD/`)
+  - Format: Analytics-optimized Parquet files
+
+- **Infrastructure**:
+  - Primary Lambda: Data collection from Fixer API
+  - ETL Lambda: Data transformation and partitioning
+  - Storage: S3 for both raw and processed data
+  - Security: Secrets Manager for API credentials
+  - Analytics: AWS Athena for SQL querying
+  - IaC: Terraform for all AWS resource provisioning
 
 This approach ensures an efficient, automated, and scalable process for ingesting and storing currency data on a regular basis.
