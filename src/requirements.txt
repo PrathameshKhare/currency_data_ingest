@@ -1,5 +1,7 @@
 requests
 pandas
+pyarrow
+pytz
 sqlalchemy
 psycopg2-binary
 boto3
