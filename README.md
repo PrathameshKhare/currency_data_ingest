@@ -104,11 +104,11 @@ The ETL process transforms raw JSON currency data into analytics-ready Parquet f
 3. **Structure of data**:
 Each Parquet file would contain rows like this:
 ```
-date       | timestamp           | base_currency | target_currency | exchange_rate | hour
------------|--------------------|---------------|----------------|---------------|-----
-2025-03-06 | 2025-03-06T00:00Z | EUR          | USD            | 1.08032      | 0
-2025-03-06 | 2025-03-06T00:00Z | EUR          | GBP            | 0.85674      | 0
-2025-03-06 | 2025-03-06T00:00Z | EUR          | JPY            | 161.234      | 0
+date       | timestamp         | base_currency  | target_currency| exchange_rate| hour
+-----------|-------------------|----------------|----------------|--------------|-----
+2025-03-06 | 2025-03-06T00:00Z | EUR            | USD            | 1.08032      | 0
+2025-03-06 | 2025-03-06T00:00Z | EUR            | GBP            | 0.85674      | 0
+2025-03-06 | 2025-03-06T00:00Z | EUR            | JPY            | 161.234      | 0
 ```
 
 4. **Load**:
