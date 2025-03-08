@@ -1,6 +1,13 @@
-resource "aws_s3_bucket" "currency_data_bucket" {
-  bucket = "currency-data-bucket"
+resource "random_string" "bucket_suffix" {
+  length  = 8
+  special = false
+  upper   = false
 }
+
+resource "aws_s3_bucket" "currency_data_bucket" {
+  bucket = "currency-data-bucket-${random_string.bucket_suffix.result}"
+}
+
 resource "aws_s3_bucket_versioning" "bucket_versioning" {
   bucket = aws_s3_bucket.currency_data_bucket.id
   versioning_configuration {
@@ -28,8 +35,8 @@ resource "aws_s3_bucket_policy" "allow_lambda_access" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "AllowLambdaAccess"
-        Effect    = "Allow"
+        Sid    = "AllowLambdaAccess"
+        Effect = "Allow"
         Principal = {
           Service = "lambda.amazonaws.com"
         }

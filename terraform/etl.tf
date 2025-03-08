@@ -1,21 +1,29 @@
+# Lambda Layer for pandas
+resource "aws_lambda_layer_version" "pandas_layer" {
+  filename            = "${path.module}/layers/pandas_layer.zip"
+  layer_name         = "pandas_layer"
+  compatible_runtimes = ["python3.12"]
+  description        = "Pandas layer for ETL processing"
+}
+
 # ETL Lambda Function
 resource "aws_lambda_function" "currency_etl" {
-  filename         = "etl_function.zip"
-  function_name    = "currency_data_etl"
-  role            = aws_iam_role.etl_lambda_role.arn
-  handler         = "etl_processor.lambda_handler"  # Updated to use lambda_handler
-  runtime         = "python3.12"
-  timeout         = 300
-  memory_size     = 512
+  filename      = "etl_function.zip"
+  function_name = "currency_etl"
+  role          = aws_iam_role.lambda_role.arn
+  handler       = "etl_processor.lambda_handler" # Updated to use lambda_handler
+  runtime       = "python3.12"
+  timeout       = 300
+  memory_size   = 256
 
   environment {
     variables = {
-      TARGET_BUCKET = aws_s3_bucket.currency_data_bucket.id
+      S3_BUCKET = aws_s3_bucket.currency_data_bucket.id
     }
   }
 
   layers = [aws_lambda_layer_version.pandas_layer.arn]
-  
+
   tags = {
     Name = "Currency Data ETL Processor"
     Type = "ETL"
